@@ -49,7 +49,7 @@ metadata:
   namespace: app-test-1
 spec:
   rules:
-  - host: "app-test-1.kube-demo-1.clcreative.home"
+  - host: "app-test-1.my.org"
     http:
       paths:
       - path: /
@@ -61,7 +61,7 @@ spec:
               number: 80
   tls:
   - hosts:
-    - app-test-1.kube-demo-1.clcreative.home
+    - app-test-1.my.org
     secretName: app-test-1-tls-secret              
 ---
 apiVersion: cert-manager.io/v1
@@ -75,4 +75,4 @@ spec:
     name: ssl-issuer
     kind: ClusterIssuer
   dnsNames:
-    - app-test-1.kube-demo-1.clcreative.home
+    - app-test-1.my.org
