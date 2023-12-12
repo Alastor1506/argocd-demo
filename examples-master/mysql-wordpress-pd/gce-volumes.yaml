@@ -4,7 +4,7 @@ metadata:
   name: wordpress-pv-1
 spec:
   capacity:
-    storage: 20Gi
+    storage: 4Gi
   accessModes:
     - ReadWriteOnce
   gcePersistentDisk:
@@ -17,7 +17,7 @@ metadata:
   name: wordpress-pv-2
 spec:
   capacity:
-    storage: 20Gi
+    storage: 2Gi
   accessModes:
     - ReadWriteOnce
   gcePersistentDisk:
