@@ -1,3 +1,0 @@
-## Basket API
-
-Go application
