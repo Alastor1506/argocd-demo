@@ -38,6 +38,9 @@ metadata:
   labels:
     app: filebeat
 spec:
+  selector:
+    matchLabels:
+      app: filebeat
   template:
     metadata:
       labels:

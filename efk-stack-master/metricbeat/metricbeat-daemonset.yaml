@@ -7,10 +7,13 @@ metadata:
   labels:
     k8s-app: metricbeat
 spec:
+  selector:
+    matchLabels:
+      app: metricbeat
   template:
     metadata:
       labels:
-        k8s-app: metricbeat
+        app: metricbeat
     spec:
       serviceAccountName: metricbeat
       terminationGracePeriodSeconds: 30
