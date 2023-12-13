@@ -21,7 +21,7 @@ spec:
       containers:
       - name: api
         image: hjgraca/frontend:0.1
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 3000
         env:

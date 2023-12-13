@@ -17,7 +17,7 @@ spec:
       containers:
       - name: api
         image: hjgraca/checkout-api:0.1
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         env:
         - name: REDIS_URL
           value: "redis:6379"
