@@ -5,7 +5,7 @@ metadata:
   name: metricbeat
   namespace: kube-logging
   labels:
-    k8s-app: metricbeat
+    app: metricbeat
 spec:
   selector:
     matchLabels:
