@@ -1,0 +1,132 @@
+version: "3.9"
+services:
+  web:
+    build: ./src/frontend
+    image: ${REPO}/frontend:${TAG}
+    ports:
+      - "6001:3000"
+    environment:
+      - MoviesApiUri=http://movies-api
+      - RecommendationApiUri=http://recommendation-api
+      - BasketApiUri=http://basket-api
+      - CheckoutApiUri=http://checkout-api
+      - AdsApiUri=http://ads-api
+    depends_on:
+      - movies-api
+      - recommendation-api
+      - basket-api
+  movies-api:
+    build: ./src/movies-api
+    image: ${REPO}/movies-api:${TAG}
+    ports:
+      - "6002:80"
+  recommendation-api:
+    build: ./src/recommendation-api
+    image: ${REPO}/recommendation-api:${TAG}
+    ports:
+      - "6003:80"
+    environment:
+      - MOVIE_API_URL=http://movies-api
+  ads-api:
+    build: ./src/ad-api
+    image: ${REPO}/ad-api:${TAG}
+    ports:
+      - "6004:80"
+  basket-api:
+    build: ./src/basket-api
+    image: ${REPO}/basket-api:${TAG}
+    depends_on:
+      - redis
+    ports:
+      - "6005:80"
+    environment:
+      - REDIS_URL=redis:6379
+  checkout-api:
+    build: ./src/checkout-api
+    image: ${REPO}/checkout-api:${TAG}
+    depends_on:
+      - redis
+    ports:
+      - "6006:80"
+    environment:
+      - REDIS_URL=redis
+      - NATS_URL=nats://nats:4222
+      - ORDER_SUBJECT=ORDERS
+  locust-leader:
+    image: locustio/locust
+    scale: 0 #Change to 1 to run load tests
+    depends_on:
+      - web
+    ports:
+      - "6007:8089"
+    volumes:
+      - ./src/load-generator:/mnt/locust
+    command: -f /mnt/locust/loadtest.py --master -H http://web:3000 --headless -u 100 -r 10
+  locust-worker:
+    image: locustio/locust
+    volumes:
+      - ./src/load-generator:/mnt/locust
+    command: -f /mnt/locust/loadtest.py --worker --master-host locust-leader
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+  nats:
+    image: nats-streaming
+  order-processor:
+    build: ./src/order-processor
+    image: ${REPO}/order-processor:${TAG}
+    command: bash -c 'while !</dev/tcp/db/5432; do sleep 5; done; /order-processor'
+    depends_on:
+      - nats
+      - db
+    environment:
+      - NATS_URL=nats://nats:4222
+      - ORDER_SUBJECT=ORDERS
+      - ORDER_COMPLETE_SUBJECT=ORDER_PROCESSED
+      - POSTGRESQL_USER=postgres
+      - POSTGRESQL_PASSWORD=postgres
+      - POSTGRESQL_SERVER=db
+      - POSTGRESQL_DB=kubeflix
+  db:
+    image: postgres
+    ports:
+      - "5432:5432"
+    # volumes:
+    #   - ./data/db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=kubeflix
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+  notification-service:
+    build: ./src/notification-service
+    image: ${REPO}/notification-service:${TAG}
+    depends_on:
+      - nats
+    environment:
+      - NATS_URL=nats://nats:4222
+      - ORDER_COMPLETE_SUBJECT=ORDER_PROCESSED
+      - ORDER_SHIPPED_SUBJECT=ORDER_SHIPPED
+  shipping-service:
+    build: ./src/shipping-service
+    image: ${REPO}/shipping-service:${TAG}
+    depends_on:
+      - nats
+      - db
+    environment:
+      - NATS_URL=nats://nats:4222
+      - ORDER_COMPLETE_SUBJECT=ORDER_PROCESSED
+      - ORDER_SHIPPED_SUBJECT=ORDER_SHIPPED
+      - POSTGRESQL_USER=postgres
+      - POSTGRESQL_PASSWORD=postgres
+      - POSTGRESQL_SERVER=db
+      - POSTGRESQL_DB=kubeflix
+  nginx:
+    image: nginx
+    container_name: nginx
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./nginx-local/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx-local/certs:/etc/nginx/certs
