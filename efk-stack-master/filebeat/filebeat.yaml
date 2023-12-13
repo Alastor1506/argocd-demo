@@ -30,7 +30,7 @@ data:
       username: ${ELASTICSEARCH_USERNAME}
       password: ${ELASTICSEARCH_PASSWORD}
 ---
-apiVersion: extensions/v1
+apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: filebeat
