@@ -2,10 +2,9 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: es-cluster
-  namespace: kube-logging
 spec:
   serviceName: elasticsearch
-  replicas: 2
+  replicas: 3
   selector:
     matchLabels:
       app: elasticsearch
@@ -16,12 +15,12 @@ spec:
     spec:
       containers:
       - name: elasticsearch
-        image: docker.elastic.co/elasticsearch/elasticsearch:7.2.0
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.5.0
         resources:
             limits:
-              cpu: 300m
+              cpu: 1000m
             requests:
-              cpu: 50m
+              cpu: 100m
         ports:
         - containerPort: 9200
           name: rest
@@ -40,9 +39,9 @@ spec:
               fieldRef:
                 fieldPath: metadata.name
           - name: discovery.seed_hosts
-            value: "es-cluster-0.elasticsearch,es-cluster-1.elasticsearch"
+            value: "es-cluster-0.elasticsearch,es-cluster-1.elasticsearch,es-cluster-2.elasticsearch"
           - name: cluster.initial_master_nodes
-            value: "es-cluster-0,es-cluster-1"
+            value: "es-cluster-0,es-cluster-1,es-cluster-2"
           - name: ES_JAVA_OPTS
             value: "-Xms512m -Xmx512m"
       initContainers:
@@ -70,9 +69,8 @@ spec:
       labels:
         app: elasticsearch
     spec:
-      accessModes:
-      - ReadWriteOnce
-      storageClassName: my-local-storage
+      accessModes: [ "ReadWriteOnce" ]
+      # storageClassName: ""
       resources:
         requests:
-          storage: 10Gi
+          storage: 3Gi
