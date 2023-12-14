@@ -4,7 +4,7 @@ metadata:
   name: fluentd
 roleRef:
   kind: ClusterRole
-  name: fluentd
+  name: view
   apiGroup: rbac.authorization.k8s.io
 subjects:
 - kind: ServiceAccount
