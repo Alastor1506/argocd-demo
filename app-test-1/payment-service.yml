@@ -1,79 +1,74 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: app-front
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: app-front-deploy
+  name: payment-service-deploy
   namespace: app-test-1
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels: 
-      app: app-front
+      app: payment-service
   template:
     metadata:
       labels:
-        app: app-front
+        app: payment-service
     spec:
       containers:
-      - name: app-front
-        image: nginx
+      - name: payment-service
+        image: redis
         ports:
         - name: web
-          containerPort: 80
+          containerPort: 6379
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: app-front-svc
+  name: payment-service-svc
   namespace: app-test-1
   labels:
-    app: app-front
+    app: payment-service
 spec:
   type: NodePort
   ports:
   - name:  http
-    port:  80
-    targetPort: 80
-    nodePort: 30080
+    port:  6379
+    targetPort: 6379
+    nodePort: 30084
     protocol: TCP
   selector:
-    app: app-front
+    app: payment-service
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: app-front-ingress
-  namespace: app-front
+  name: payment-service-ingress
+  namespace: app-test-1
 spec:
   rules:
-  - host: "app-front.my.org"
+  - host: "payment-service.<your-domain>"
     http:
       paths:
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: app-front-svc 
+            name: payment-service-svc 
             port:
-              number: 80
+              number: 6379
   tls:
   - hosts:
-    - app-front.my.org
-    secretName: app-front-tls-secret              
+    - payment-service.<your-domain>
+    secretName: <ssl-secret>              
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: app-front-cert
+  name: payment-service-cert
   namespace: app-test-1
 spec:
-  secretName: app-front-tls-secret
+  secretName: payment-service-tls-secret
   issuerRef:
     name: ssl-issuer
     kind: ClusterIssuer
   dnsNames:
-    - app-front.my.org
+    - payment-service.<your-domain>

@@ -1,79 +1,74 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: app-front
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: app-front-deploy
+  name: order-service-deploy
   namespace: app-test-1
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels: 
-      app: app-front
+      app: order-service
   template:
     metadata:
       labels:
-        app: app-front
+        app: order-service
     spec:
       containers:
-      - name: app-front
-        image: nginx
+      - name: order-service
+        image: rabbitmq
         ports:
         - name: web
-          containerPort: 80
+          containerPort: 5672
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: app-front-svc
+  name: order-service-svc
   namespace: app-test-1
   labels:
-    app: app-front
+    app: order-service
 spec:
   type: NodePort
   ports:
   - name:  http
-    port:  80
-    targetPort: 80
-    nodePort: 30080
+    port:  5672
+    targetPort: 5672
+    nodePort: 30083
     protocol: TCP
   selector:
-    app: app-front
+    app: order-service
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: app-front-ingress
-  namespace: app-front
+  name: order-service-ingress
+  namespace: app-test-1
 spec:
   rules:
-  - host: "app-front.my.org"
+  - host: "order-service.<your-domain>"
     http:
       paths:
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: app-front-svc 
+            name: order-service-svc 
             port:
-              number: 80
+              number: 5672
   tls:
   - hosts:
-    - app-front.my.org
-    secretName: app-front-tls-secret              
+    - order-service.<your-domain>
+    secretName: <ssl-secret>              
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: app-front-cert
+  name: order-service-cert
   namespace: app-test-1
 spec:
-  secretName: app-front-tls-secret
+  secretName: order-service-tls-secret
   issuerRef:
     name: ssl-issuer
     kind: ClusterIssuer
   dnsNames:
-    - app-front.my.org
+    - order-service.<your-domain>

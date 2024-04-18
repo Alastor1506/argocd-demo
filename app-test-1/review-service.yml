@@ -1,79 +1,74 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: app-front
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: app-front-deploy
+  name: review-service-deploy
   namespace: app-test-1
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels: 
-      app: app-front
+      app: review-service
   template:
     metadata:
       labels:
-        app: app-front
+        app: review-service
     spec:
       containers:
-      - name: app-front
-        image: nginx
+      - name: review-service
+        image: elasticsearch
         ports:
         - name: web
-          containerPort: 80
+          containerPort: 9200
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: app-front-svc
+  name: review-service-svc
   namespace: app-test-1
   labels:
-    app: app-front
+    app: review-service
 spec:
   type: NodePort
   ports:
   - name:  http
-    port:  80
-    targetPort: 80
-    nodePort: 30080
+    port:  9200
+    targetPort: 9200
+    nodePort: 30086
     protocol: TCP
   selector:
-    app: app-front
+    app: review-service
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: app-front-ingress
-  namespace: app-front
+  name: review-service-ingress
+  namespace: app-test-1
 spec:
   rules:
-  - host: "app-front.my.org"
+  - host: "review-service.<your-domain>"
     http:
       paths:
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: app-front-svc 
+            name: review-service-svc 
             port:
-              number: 80
+              number: 9200
   tls:
   - hosts:
-    - app-front.my.org
-    secretName: app-front-tls-secret              
+    - review-service.<your-domain>
+    secretName: <ssl-secret>              
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: app-front-cert
+  name: review-service-cert
   namespace: app-test-1
 spec:
-  secretName: app-front-tls-secret
+  secretName: review-service-tls-secret
   issuerRef:
     name: ssl-issuer
     kind: ClusterIssuer
   dnsNames:
-    - app-front.my.org
+    - review-service.<your-domain>
