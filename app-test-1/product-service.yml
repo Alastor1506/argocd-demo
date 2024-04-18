@@ -45,7 +45,7 @@ metadata:
   namespace: app-test-1
 spec:
   rules:
-  - host: "product-service.<your-domain>"
+  - host: "product-service.my.org"
     http:
       paths:
       - path: /
@@ -57,8 +57,8 @@ spec:
               number: 27017
   tls:
   - hosts:
-    - product-service.<your-domain>
-    secretName: <ssl-secret>              
+    - product-service.my.org
+    secretName: product-service-tls-secret              
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -71,4 +71,4 @@ spec:
     name: ssl-issuer
     kind: ClusterIssuer
   dnsNames:
-    - product-service.<your-domain>
+    - product-service.my.org

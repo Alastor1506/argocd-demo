@@ -45,7 +45,7 @@ metadata:
   namespace: app-test-1
 spec:
   rules:
-  - host: "order-service.<your-domain>"
+  - host: "order-service.my.org"
     http:
       paths:
       - path: /
@@ -57,8 +57,8 @@ spec:
               number: 5672
   tls:
   - hosts:
-    - order-service.<your-domain>
-    secretName: <ssl-secret>              
+    - order-service.my.org
+    secretName: order-service-tls-secret             
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -71,4 +71,4 @@ spec:
     name: ssl-issuer
     kind: ClusterIssuer
   dnsNames:
-    - order-service.<your-domain>
+    - order-service.my.org

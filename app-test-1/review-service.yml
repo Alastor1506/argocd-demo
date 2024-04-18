@@ -45,7 +45,7 @@ metadata:
   namespace: app-test-1
 spec:
   rules:
-  - host: "review-service.<your-domain>"
+  - host: "review-service.my.org"
     http:
       paths:
       - path: /
@@ -57,8 +57,8 @@ spec:
               number: 9200
   tls:
   - hosts:
-    - review-service.<your-domain>
-    secretName: <ssl-secret>              
+    - review-service.my.org
+    secretName: review-service-tls-secret           
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -71,4 +71,4 @@ spec:
     name: ssl-issuer
     kind: ClusterIssuer
   dnsNames:
-    - review-service.<your-domain>
+    - review-service.my.org

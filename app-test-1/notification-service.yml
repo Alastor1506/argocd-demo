@@ -45,7 +45,7 @@ metadata:
   namespace: app-test-1
 spec:
   rules:
-  - host: "notification-service.<your-domain>"
+  - host: "notification-service.my.org"
     http:
       paths:
       - path: /
@@ -57,8 +57,8 @@ spec:
               number: 8025
   tls:
   - hosts:
-    - notification-service.<your-domain>
-    secretName: <ssl-secret>              
+    - notification-service.my.org
+    secretName: notification-service-tls-secret              
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -71,4 +71,4 @@ spec:
     name: ssl-issuer
     kind: ClusterIssuer
   dnsNames:
-    - notification-service.<your-domain>
+    - notification-service.my.org
